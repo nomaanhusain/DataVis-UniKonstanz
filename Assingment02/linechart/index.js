@@ -96,6 +96,7 @@ let viewport = svg.append("g").attr("transform",
 // TASK 3 b): Initialize Scales using d3.linearScale function (see https://github.com/d3/d3-scale/blob/master/README.md#continuous-scales)
 // You can make use of the d3.extent and d3.max function to calculate the domains. (see https://github.com/d3/d3-array/blob/master/README.md#statistics)
 // Create separate scales for the x axis (time scale), the temperature and the rainfall.
+
 let x = d3.scaleTime()
             .domain([d3.min(avgData, function(d) { return d.year; }),d3.max(avgData, function(d) { return +d.year; })])
             .range([0,visWidth]);
@@ -124,63 +125,54 @@ svg.append("g")
     .attr("transform", "translate("+(visWidth+margins.left)+"," + 0 + ")")
     .call(d3.axisRight(rainY));
 
-
-console.log("remove")
-svg.append("path")
-.attr("transform", "translate("+margins.left+", 0)")
-      .datum(avgData)
-      .attr("fill", "none")
-      .attr("stroke", "red")
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.line()
-        .x(d => x(d.year))
-        .y(d => tempY(d.temp))
-        )
-console.log()
-svg.append("path")
-.attr("transform", "translate("+margins.left+", 0)")
-      .datum(avgData)
-      .attr("fill", "none")
-      .attr("stroke", "steelBlue")
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.line()
-        .x(d => x(d.year))
-        .y(d => rainY(d.rain))
-        )
 // In order to organize our code, we add another group which will hold all elements (circles and paths) of the visualization
 let visualization = viewport.append("g");
-
-//this is creating groups of data with all the attribute
 let circles = visualization.selectAll("circle")
     .data(avgData).enter();
 
 console.log("Entered Data:", circles);
+
 // TASK 3 c): Append one blue circle for each rain data point. Make use of the previously initialized scales and anonymous functions.
+
 circles.append("circle")
-
-
-// svg.append("circle")
-// .attr("transform", "translate("+margins.left+", 70)")
-//     .datum(avgData)
-//     .attr("r", 3.5)
-//     .attr("cx", function(d) { return x(d.year); })
-//     .attr("cy", function(d) { return tempY(d.temp); });
-
-
+    .attr("cx", function(d) {return x(d.year); })
+    .attr("cy", function(d) {return rainY(d.rain)-20; })
+    .attr("r", 3)
+    .attr("fill", "blue");
 
 
 // TASK 3 d): Append one red circle for each temperature data point. Make use of the previously initialized scales and anonymous functions.
 
-
-
-
-
-
+circles.append("circle")
+    .attr("cx", function(d) {return x(d.year); })
+    .attr("cy", function(d) {return tempY(d.temp)-20; })
+    .attr("r", 3)
+    .attr("fill", "red");
 
 
 // TASK 3 e): Initialize a line generator for each line (rain and temperature) and define the generators x and y value.
 // Save the line-generators to variable
+let temp_path = svg.append("path")
+                    .attr("transform", "translate("+margins.left+", 0)")
+                    .datum(avgData)
+                    .attr("fill", "none")
+                    .attr("stroke", "red")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", d3.line()
+                        .x(d => x(d.year))
+                        .y(d => tempY(d.temp))
+                        )
 
+let rain_path = svg.append("path")
+                    .attr("transform", "translate("+margins.left+", 0)")
+                    .datum(avgData)
+                    .attr("fill", "none")
+                    .attr("stroke", "blue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", d3.line()
+                    .x(d => x(d.year))
+                    .y(d => rainY(d.rain))
+                    )
 
 
 
