@@ -28,11 +28,12 @@ function load_data(){
 //print_data()
 console.log("Raw Data:", data);
 
+//Using async await to await data before starting execution
 async function main_stuff(){
 
 raw_data=await load_data()
 /* TASK 1 c): Retrieve (select) the visualization container node of the div element declared within the index.html by its identifier. */
-var vis_container = d3.select("#vis-container")
+let vis_container = d3.select("#vis-container")
 
 // Specify margins such that the visualization is clearly visible and no elements are invisible due to the svg border
 let margins = {
@@ -47,6 +48,7 @@ let width = 800;
 let height = 400;
 let visWidth = width - margins.left - margins.right;
 let visHeight = height - margins.top - margins.bottom;
+console.log("visHeight",visHeight)
 
 /* TASK 1 d): Append an svg element to the vis-container, set its width and height (in pixels), add it to the vis-container, 
 and save the element to variable called 'svg' */
@@ -97,33 +99,27 @@ let viewport = svg.append("g").attr("transform",
 // You can make use of the d3.extent and d3.max function to calculate the domains. (see https://github.com/d3/d3-array/blob/master/README.md#statistics)
 // Create separate scales for the x axis (time scale), the temperature and the rainfall.
 
-let x = d3.scaleTime()
+let timeScale = d3.scaleTime()
             .domain([d3.min(avgData, function(d) { return d.year; }),d3.max(avgData, function(d) { return +d.year; })])
-            .range([0,visWidth]);
+            .range([margins.left,visWidth-margins.right]);
 
-svg.append("g")
-.attr("transform", "translate("+margins.left+","+visHeight+")")
-    .call(d3.axisBottom(x));
+
 
 
 
 var tempY = d3.scaleLinear()
             .domain([0,d3.max(avgData, function(d) { return +d.temp; })])
-            .range([visHeight,0])
+            .range([visHeight-margins.top,margins.bottom])
 
-svg.append("g")
-    .attr("transform", "translate("+margins.left+", 0)")
-    .call(d3.axisLeft(tempY));
+
 
 
 
 let rainY = d3.scaleLinear()
             .domain([0,d3.max(avgData, function(d) { return +d.rain; })])
-            .range([visHeight,0])
+            .range([visHeight-margins.top,margins.bottom])
 
-svg.append("g")
-    .attr("transform", "translate("+(visWidth+margins.left)+"," + 0 + ")")
-    .call(d3.axisRight(rainY));
+
 
 // In order to organize our code, we add another group which will hold all elements (circles and paths) of the visualization
 let visualization = viewport.append("g");
@@ -135,8 +131,9 @@ console.log("Entered Data:", circles);
 // TASK 3 c): Append one blue circle for each rain data point. Make use of the previously initialized scales and anonymous functions.
 
 circles.append("circle")
-    .attr("cx", function(d) {return x(d.year); })
-    .attr("cy", function(d) {return rainY(d.rain)-20; })
+    .attr("transform", "translate(0,"+margins.top+")")
+    .attr("cx", function(d) {return timeScale(d.year); })
+    .attr("cy", function(d) {return rainY(d.rain); })
     .attr("r", 3)
     .attr("fill", "blue");
 
@@ -144,42 +141,42 @@ circles.append("circle")
 // TASK 3 d): Append one red circle for each temperature data point. Make use of the previously initialized scales and anonymous functions.
 
 circles.append("circle")
-    .attr("cx", function(d) {return x(d.year); })
-    .attr("cy", function(d) {return tempY(d.temp)-20; })
+    .attr("transform", "translate(0,"+margins.top+")")
+    .attr("cx", function(d) {return timeScale(d.year); })
+    .attr("cy", function(d) {return tempY(d.temp); })
     .attr("r", 3)
     .attr("fill", "red");
 
 
 // TASK 3 e): Initialize a line generator for each line (rain and temperature) and define the generators x and y value.
 // Save the line-generators to variable
-let temp_path = svg.append("path")
-                    .attr("transform", "translate("+margins.left+", 0)")
-                    .datum(avgData)
-                    .attr("fill", "none")
-                    .attr("stroke", "red")
-                    .attr("stroke-width", 1.5)
-                    .attr("d", d3.line()
-                        .x(d => x(d.year))
-                        .y(d => tempY(d.temp))
-                        )
 
-let rain_path = svg.append("path")
-                    .attr("transform", "translate("+margins.left+", 0)")
-                    .datum(avgData)
-                    .attr("fill", "none")
-                    .attr("stroke", "blue")
-                    .attr("stroke-width", 1.5)
-                    .attr("d", d3.line()
-                    .x(d => x(d.year))
-                    .y(d => rainY(d.rain))
-                    )
+let temp_lineGenerator = d3.line().x(d => timeScale(d.year)).y(d => tempY(d.temp))
+let tempPathMaker = temp_lineGenerator(avgData)
+
+
+let rain_lineGenerator = d3.line().x(d => timeScale(d.year)).y(d => rainY(d.rain))
+let rainPathMaker = rain_lineGenerator(avgData)
 
 
 
 // TASK 3 f): Append two path elements to the 'visualization' group. Set its 'd' attribute respectively using the linegenerators from above
 // Do not forget to set the correct class attributes in order to have the stylesheet applied (.line-temp, .line-rain, .line)
 
+visualization.append('path')
+.attr("transform", "translate(0,"+margins.top+")")
+.attr('d',tempPathMaker)
+.attr('class', 'line-temp')
+.attr("stroke-width", 1.5)
+.attr("fill", "none")
 
+
+visualization.append('path')
+.attr("transform", "translate(0,"+margins.top+")")
+.attr('d',rainPathMaker)
+.attr('class', 'line-rain')
+.attr("stroke-width", 1.5)
+.attr("fill", "none")
 
 
 // Task 4
@@ -192,15 +189,23 @@ axisG.append('text').attr('class', 'axis-text').text('Year').attr('x', visWidth/
 // Add X Axis for years
 axisG.append("g")
     .attr("class", "x axis")
-    .attr("transform", "translate(0," + visHeight + ")")
+    .attr("transform", "translate("+0+","+visHeight+")")
     .call(d3.axisBottom(timeScale)); // Create an axis component with d3.axisBottom
 
 // TASK 4 a): append a group for the axis of the temperature on the left side (d3.axisLeft)
-
-
+axisG.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate("+margins.left+","+margins.top+")")
+    .call(d3.axisLeft(tempY)); // Create an axis component with d3.axisBottom
 
 
 // TASK 4 b): append a group for the axis of the rain on the right side (d3.axisRight)
+
+axisG.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate("+(visWidth-margins.right)+"," + margins.top + ")")
+    .call(d3.axisRight(rainY)); // Create an axis component with d3.axisBottom
+
 }
 main_stuff()
 
