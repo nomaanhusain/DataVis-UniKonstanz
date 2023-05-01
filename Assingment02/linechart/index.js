@@ -182,8 +182,8 @@ visualization.append('path')
 // Task 4
 // Lets add some axis (check https://github.com/d3/d3-axis for an example)
 let axisG = viewport.append("g");
-axisG.append('text').attr('class', 'axis-text').text('Temp').attr('x', 0).attr('y', 0);
-axisG.append('text').attr('class', 'axis-text').text('Rain').attr('x', visWidth).attr('y', 0);
+axisG.append('text').attr('class', 'axis-text').text('Temperature').attr('x', 0).attr('y', margins.bottom).attr('fill','red');
+axisG.append('text').attr('class', 'axis-text').text('Rain').attr('x', visWidth-margins.right).attr('y', margins.bottom).attr('fill','blue');
 axisG.append('text').attr('class', 'axis-text').text('Year').attr('x', visWidth/2).attr('y', visHeight+margins.bottom);
 
 // Add X Axis for years
