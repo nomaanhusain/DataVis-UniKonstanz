@@ -21,11 +21,7 @@ let raw_data=null
 function load_data(){
     return data
 }
-// async function print_data(){
-//     raw_data=await load_data()
-//     console.log("Async Raw Data", raw_data)
-// }
-//print_data()
+
 console.log("Raw Data:", data);
 
 //Using async await to await data before starting execution
