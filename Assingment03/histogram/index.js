@@ -47,7 +47,7 @@ function update(numbins) {
   const bins = bin_function(ratesValue);
   console.log("Bins = ",bins)
   // Task 2.3 Create a linear y scale to given the number of elements in the bins [0, max(elements in bin)]
-   let yScale = d3.scaleLinear().domain([0,d3.max(bins, function(d) { return d.length; })]).range([height-margin.bottom,margin.bottom])
+   let yScale = d3.scaleLinear().domain([0,d3.max(bins, function(d) { return d.length; })]).range([height,0]).nice()
    let xScale = d3.scaleLinear().domain([1,d3.max(bins, (d) => d.x0)]).range([margin.left,width-margin.right])
   // TASK 2.4. Select the #chart <svg> element.
   const svg = d3.select("#chart")
@@ -67,7 +67,7 @@ function update(numbins) {
   }
   let eachBinWidth = (width - margin.left - margin.right)/numbins
   bins.forEach(element => {
-    console.log("yee "+ idx +" "+ xScale(element.x0))
+    console.log("yee "+ idx +" "+ yScale(element.length))
     idx=idx+1;
   });
   
