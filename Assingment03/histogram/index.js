@@ -42,14 +42,14 @@ function update(numbins) {
   // TASK 2.2: Bin the data using https://github.com/d3/d3-array/blob/main/README.md#bin (Examples: https://observablehq.com/@d3/d3-bin )
   // Make sure to specify the following attributes: domain and threshold, threshold is the approximate number of bins.
   // Afterwards bin the input data
-  console.log(d3.max(data, function(d) { return d.rate; }))
+  //console.log(d3.max(data, function(d) { return d.rate; }))
   const bin_function = d3.bin().domain([0,d3.max(data, function(d) { return d.rate; })]).thresholds(numbins)
   var ratesValue = data.map(function(d) {
     return d.rate
   });
-  console.log("rates value = ",ratesValue)
+  //console.log("rates value = ",ratesValue)
   const bins = bin_function(ratesValue);
-  console.log("Bins = ",bins)
+  //console.log("Bins = ",bins)
   // Task 2.3 Create a linear y scale to given the number of elements in the bins [0, max(elements in bin)]
    let yScale = d3.scaleLinear().domain([0,d3.max(bins, function(d) { return d.length; })]).range([height,margin.bottom])
    let xScale = d3.scaleLinear().domain([0,bins.length]).range([margin.left,width-margin.right-margin.left])
@@ -71,10 +71,7 @@ function update(numbins) {
     return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
   }
 
-  bins.forEach(element => {
-    // console.log("yee "+ idx +" "+ yScale(element.length))
-    idx=idx+1;
-  });
+
   
 
   rects = svg.selectAll("rect")
@@ -88,29 +85,27 @@ function update(numbins) {
     .attr("height", function(d) { return height - yScale(d.length); })
     .style("fill", "#69b3a2")
 
-// rects.append('g').attr("transform", "translate(0,10)");
-  
-axisX=svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate("+(0)+","+(height-margin.bottom)+")")
-    .call(d3.axisBottom(xScale));
 
-axisY=svg.append("g")
-  .attr("class", "y axis")
-  .attr("transform", "translate("+margin.left+","+(-margin.bottom)+")")
-  .call(d3.axisLeft(yScale));
+
+
+
+
 
   // Task 3 Add a tooltip to the visualization
   // Hint:
   // 1. Add an empty <div> element with id "tooltip" to the body of the document and make it invisible
   //const tooltip = d3.select("body")...
+  let tooltip = d3.select("#tooltip").style("visibility","hidden")
   
   // 3.2. Add a mouseover event listener to the <rect> elements and make the <div> element visible and set the text of the <div> element to the data of the hovered <rect> element
   // Rember that the data is accessible via the second parameter of the event listener function
   // 3.3. On mousemove, set the text of the <div> element to the data of the hovered <rect> element
   // 3.4. On mouseout, hide the <div> element
   // 3.5. Position the <div> element using absolute positioning and the pageX and pageY properties of the mousemove event
-
+  svg.selectAll("rect")
+  .on("mouseover", function(event,bins){tooltip.html((bins.length)).style('visibility','visible');})
+  .on("mousemove", function(event){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+  .on("mouseout", function(event){return tooltip.style("visibility", "hidden");})
   // Task 2.7 Append a rectangle for every newly added rect to the visualization, update their position (x, y, width, height)
   // Do not forget to add the tooltip event listeners to the new rectangles (see Task 3)
   //rects.
@@ -119,9 +114,17 @@ axisY=svg.append("g")
   // Task 2.8 add an x axis to the visualization
   // Hint: https://github.com/d3/d3-axis
   //...
+  axisX=svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate("+(0)+","+(height-margin.bottom)+")")
+    .call(d3.axisBottom(xScale));
 
   // Task 2.9 add a y axis to the visualization
   //...  
+  axisY=svg.append("g")
+  .attr("class", "y axis")
+  .attr("transform", "translate("+margin.left+","+(-margin.bottom)+")")
+  .call(d3.axisLeft(yScale));
 }
 
 // call update function with initial value to create visualization on first site visit
