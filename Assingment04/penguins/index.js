@@ -45,7 +45,6 @@ console.log("Dimensions of the dataset: ", allDimensions)
 var cleanData = data.filter(obj =>
   Object.values(obj).every(prop => prop !== undefined))
 
-console.log("cleaned data length",cleanData.length)
 console.log("cleaned Data:", cleanData.map(d => d.sex))
 
 //TASK: seperate numeric and ordinal dimensions
@@ -157,35 +156,70 @@ colorSelect.on('change', () => {
 let xDim = 'culmen_length_mm'
 let yDim = 'culmen_depth_mm'
 let sizeDim = 'body_mass_g'
+let colorDim = 'species'
+
 let xScale = d3.scaleLinear()
-  .domain([d3.min(numerics, (d)=> d[xDim]), d3.max(numerics, (d)=> d[xDim])])
+  .domain([d3.min(cleanData, (d)=> d[xDim]), d3.max(cleanData, (d)=> d[xDim])])
   .range([ 0, visWidth]);
 
 let yScale = d3.scaleLinear()
-  .domain([d3.min(numerics, (d)=> d[yDim]), d3.max(numerics, (d)=> d[yDim])])
+  .domain([d3.min(cleanData, (d)=> d[yDim]), d3.max(cleanData, (d)=> d[yDim])])
   .range([ visHeight, 0]);
 
 let sizeScale = d3.scaleLinear()
-  .domain([d3.min(numerics, (d)=> d[sizeDim]), d3.max(numerics, (d)=> d[sizeDim])])
+  .domain([d3.min(cleanData, (d)=> d[sizeDim]), d3.max(cleanData, (d)=> d[sizeDim])])
   .range([ 1, 5]);
+
+
+let uniqueDimValues = new Set();
+categoricals.forEach(obj => {
+  uniqueDimValues.add(obj[colorDim]);
+});
+
+let colorScale = d3.scaleOrdinal().domain(uniqueDimValues).range(["#0000FF", "#F28500", "#39FF14"]);
+
+let xText = svg.append('text').attr('class', 'axis-text')
+.text(xDim).attr('x', visWidth-margin.right-30).attr('y', visHeight-10);
+
+let yText = svg.append('text').attr('class', 'axis-text')
+.text(yDim).attr('x', -20).attr('y', -5);
+
+let axisX=svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate("+0+","+visHeight+")")
+    .call(d3.axisBottom(xScale));
+let axisY=svg.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate("+0+","+0+")")
+    .call(d3.axisLeft(yScale));
 // TASK: x axis update:
 // Change the x Axis according to the passed dimension
 // update the cx value of all circles  
 // update the x Axis label 
 xAxisChange = (newDim) => {
   d3.selectAll('circle').remove()
+  axisX.transition().duration(200).style("opacity", 0).remove()
+  xText.transition().duration(200).style("opacity", 0).remove()
   xDim = newDim
-  
+  xText = svg.append('text').attr('class', 'axis-text')
+.text(xDim).attr('x', visWidth-margin.right-30).attr('y', visHeight-10);
   xScale = d3.scaleLinear()
-  .domain([d3.min(numerics, (d)=> d[xDim]), d3.max(numerics, (d)=> d[xDim])])
+  .domain([d3.min(cleanData, (d)=> d[xDim]), d3.max(cleanData, (d)=> d[xDim])])
   .range([ 0, visWidth]);
 
-  selection = d3.select('g#scatter-points').selectAll('circle').data(numerics)
-  .enter().append('circle')
-  .attr('cx', function(d){ return xScale(d[xDim]);})
-  .attr('cy', function(d) {return yScale(d[yDim])})
-  .attr('r', function(d) {return sizeScale(d[sizeDim])})
-  .attr('fill', 'black')
+  axisX=svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate("+0+","+visHeight+")")
+    .call(d3.axisBottom(xScale));
+  
+    selection = d3.select('g#scatter-points').selectAll('circle').data(cleanData)
+    .enter().append('circle')
+    .attr('cx', function(d){ return xScale(d[xDim]);})
+    .attr('cy', function(d) {return yScale(d[yDim])})
+    .attr('r', function(d) {return sizeScale(d[sizeDim])})
+    .attr('fill', function(d) {return colorScale(d[colorDim])})
+
+
 }
 
 
@@ -195,19 +229,28 @@ xAxisChange = (newDim) => {
 // update the y Axis label 
 yAxisChange = (newDim) => {
   d3.selectAll('circle').remove()
+  axisY.transition().duration(200).style("opacity", 0).remove()
+  yText.transition().duration(200).style("opacity", 0).remove()
   yDim = newDim
   
+  yText = svg.append('text').attr('class', 'axis-text')
+.text(yDim).attr('x', -20).attr('y', -5);
 
   yScale = d3.scaleLinear()
-  .domain([d3.min(numerics, (d)=> d[yDim]), d3.max(numerics, (d)=> d[yDim])])
+  .domain([d3.min(cleanData, (d)=> d[yDim]), d3.max(cleanData, (d)=> d[yDim])])
   .range([ visHeight, 0]);
 
-  selection = d3.select('g#scatter-points').selectAll('circle').data(numerics)
+  axisY=svg.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate("+0+","+0+")")
+    .call(d3.axisLeft(yScale));
+
+  selection = d3.select('g#scatter-points').selectAll('circle').data(cleanData)
   .enter().append('circle')
   .attr('cx', function(d){ return xScale(d[xDim]);})
   .attr('cy', function(d) {return yScale(d[yDim])})
   .attr('r', function(d) {return sizeScale(d[sizeDim])})
-  .attr('fill', 'black')
+  .attr('fill', function(d) {return colorScale(d[colorDim])})
 
 }
 
@@ -220,7 +263,32 @@ yAxisChange = (newDim) => {
 // (see #color-select-legend in the html file)
 // the value text should be colored according to the color scale 
 colorChange = (newDim) => {
-  
+  d3.selectAll('circle').remove()
+  colorDim = newDim
+  uniqueDimValues = new Set();
+  categoricals.forEach(obj => {
+    uniqueDimValues.add(obj[colorDim]);
+  });
+  colorScale = d3.scaleOrdinal().domain(uniqueDimValues).range(["#0000FF", "#F28500", "#39FF14"]);
+
+  var colorLegend = d3.select("div#color-select-legend")
+  colorLegend.selectAll('*').remove();
+
+  uniqueDimValues.forEach(val => {
+    colorLegend
+      .append("span")
+      .html(val)
+      .style("color", colorScale(val));
+  })
+
+
+  selection = d3.select('g#scatter-points').selectAll('circle').data(cleanData)
+  .enter().append('circle')
+  .attr('cx', function(d){ return xScale(d[xDim]);})
+  .attr('cy', function(d) {return yScale(d[yDim])})
+  .attr('r', function(d) {return sizeScale(d[sizeDim])})
+  .attr('fill', function(d) {return colorScale(d[colorDim])})
+
 
 }
 
@@ -236,15 +304,15 @@ sizeChange = (newDim) => {
   
 
   sizeScale = d3.scaleLinear()
-  .domain([d3.min(numerics, (d)=> d[sizeDim]), d3.max(numerics, (d)=> d[sizeDim])])
+  .domain([d3.min(cleanData, (d)=> d[sizeDim]), d3.max(cleanData, (d)=> d[sizeDim])])
   .range([1, 5]);
 
-  selection = d3.select('g#scatter-points').selectAll('circle').data(numerics)
+  selection = d3.select('g#scatter-points').selectAll('circle').data(cleanData)
   .enter().append('circle')
   .attr('cx', function(d){ return xScale(d[xDim]);})
   .attr('cy', function(d) {return yScale(d[yDim])})
   .attr('r', function(d) {return sizeScale(d[sizeDim])})
-  .attr('fill', 'black')
+  .attr('fill', function(d) {return colorScale(d[colorDim])})
 
 }
 
