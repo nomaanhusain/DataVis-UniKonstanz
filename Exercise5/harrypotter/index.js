@@ -51,10 +51,12 @@ function aggregateData(unaggregated, attribute) {
     
     return newData;
 }
-let nameAggegate = aggregateData(data,'name')
+
+
 let houseAggegate = aggregateData(data,'house')
-console.log("Name Aggregate",nameAggegate)
 console.log("House Aggregate",houseAggegate)
+
+
 d3.select('svg#chart').attr('width', width).attr('height', height)
 d3.select('g#vis-g').attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
 var svg = d3.select('g#vis-g')
@@ -62,16 +64,15 @@ var svg = d3.select('g#vis-g')
 const visHeight = height - margin.top - margin.bottom
 const visWidth = width - margin.left - margin.right
 
-
 // TASK 
 //define an ordinal color scale and define a color for each value of the 'house' attribute of the data
 let houseArr = []
 houseAggegate.nodes.forEach(obj => {
     houseArr.push(obj.name)
 })
-console.log("house arr",houseArr)
 
-var colorScale = d3.scaleOrdinal().domain(houseArr).range(["#009c31", "#f73131", "#03d9ff","#00039c","#efff14"]);
+
+var colorScale = d3.scaleOrdinal().domain(houseArr).range(["#009c31", "#f73131", "#03d9ff","#9d9da1","#efff14"]);
 
 
 
@@ -81,31 +82,47 @@ var colorScale = d3.scaleOrdinal().domain(houseArr).range(["#009c31", "#f73131",
 
 let checkbox = document.getElementById('house_checkbox');
 
+let checked = false
     // Add an event handler
 checkbox.addEventListener('change', function() {
     if (this.checked) {
     console.log('Checkbox is checked')
+    checked = true
+    updateGraph(houseAggegate)  
     } else {
     console.log('Checkbox is unchecked')
+    checked = false
+    updateGraph(data)
     }
 });
+
 
 
     
  //this function handles the creation of the graph, depending on the passed 'graphData'
  function updateGraph(graphData) {
+    d3.selectAll('circle').remove()
+    d3.selectAll("line").remove()
+    d3.selectAll('text').remove()
+    let funcLinks = graphData.links
+    let funcNodes = graphData.nodes
+    const simulation = d3.forceSimulation(funcNodes)
+    .force("link", d3.forceLink(funcLinks).id((d) => d.id))
+    .force("charge", d3.forceManyBody().strength(-400))
+    .force("center", d3.forceCenter(visWidth / 2, visHeight / 2));
 
     //TASK 
     //draw a line for each link
         //the color of the link should be green when  the value is greater than 0, red when below 0
         //if the value is below 0, add a dash-array to the stroke
+    const link = svg.selectAll("link")
+            .data(funcLinks)
+            .enter()
+            .append("line")
+            .attr("class", "link")
+        
 
 
-
-
-
- 
- 
     //TASK 
     //create a group element for each node
     //implement the drag ( https://github.com/d3/d3-drag ) behaviour to make the graph interactive
@@ -113,8 +130,78 @@ checkbox.addEventListener('change', function() {
             // if aggregated, the radius of the circle should scale according to the count
             // color the circle according to the colorScale
         //add a text label
-     
- 
+        let node = null
+        if(checked){
+            node = svg.selectAll("node")
+                .data(funcNodes)
+                .enter()
+                .append("circle")
+                .attr("class", "node")
+                .attr("r", function(d){return d.count})
+                .attr("fill",function(d){return colorScale(d.house)})
+                .call(d3.drag().on("start", dragStarted).on("drag", dragged).on("end", dragEnded));
+
+        }else{
+            node = svg.selectAll("node")
+                .data(funcNodes)
+                .enter()
+                .append("circle")
+                .attr("class", "node")
+                .attr("r", 5)
+                .attr("fill",function(d){return colorScale(d.house)})
+                .call(d3.drag().on("start", dragStarted).on("drag", dragged).on("end", dragEnded));
+        }
+
+    const text  = svg.selectAll("labelText")
+        .data(funcNodes)
+        .enter()
+        .append("text")
+        .attr("class", "labelText")
+        .attr("dy", ".25em")
+
+
+      // Add tick function for updating positions of nodes and links
+      //use d.value to define the type of line
+        simulation.on("tick", () => {
+            link
+            .attr("x1", (d) => d.source.x)
+            .attr("y1", (d) => d.source.y)
+            .attr("x2", (d) => d.target.x)
+            .attr("y2", (d) => d.target.y)
+            .attr("stroke-dasharray", (d) => (d.value < 0 ? "3,3" : "none"))
+            .attr("stroke", function(d){
+                if(d.value > 0 ) return "green"
+                else return "red"
+            });
+      
+            node
+            .attr("cx", (d) => d.x)
+            .attr("cy", (d) => d.y);
+
+            text
+            .attr("x", (d) => d.x)
+            .attr("y",(d) => d.y - 15)
+            .text((d) => d.name)
+
+        });
+      
+      // Drag functions for node interaction
+      function dragStarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+      
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
+      
+      function dragEnded(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
          
 
 

@@ -1,0 +1,4 @@
+Nomaan:
+
+Okay so most of it is done. But I cant understand how to create dotted lines when aggregating because the value attribute is always 0 when the aggregateData() function is called.
+and the line is dependent on it.
