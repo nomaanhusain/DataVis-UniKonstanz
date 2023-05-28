@@ -106,10 +106,7 @@ checkbox.addEventListener('change', function() {
     d3.selectAll('text').remove()
     let funcLinks = graphData.links
     let funcNodes = graphData.nodes
-    const simulation = d3.forceSimulation(funcNodes)
-    .force("link", d3.forceLink(funcLinks).id((d) => d.id))
-    .force("charge", d3.forceManyBody().strength(-400))
-    .force("center", d3.forceCenter(visWidth / 2, visHeight / 2));
+    
 
     //TASK 
     //draw a line for each link
@@ -160,6 +157,28 @@ checkbox.addEventListener('change', function() {
         .attr("dy", ".25em")
 
 
+
+
+    // TASK
+    // create a force Simulation ( https://github.com/d3/d3-force ) using the nodes and links
+        //make sure the force is centered at the middle of your visualization 
+        //and the nodes do not overlap
+ 
+    let simulation = null
+    if(checked){
+        simulation = d3.forceSimulation(funcNodes)
+    .force("link", d3.forceLink(funcLinks).id((d) => d.id))
+    .force("charge", d3.forceManyBody().strength(-400))
+    .force("center", d3.forceCenter(visWidth / 2, visHeight / 2))
+    .force('collision',d3.forceCollide().radius(5))
+    }else{
+        simulation = d3.forceSimulation(funcNodes)
+    .force("link", d3.forceLink(funcLinks).id((d) => d.id))
+    .force("charge", d3.forceManyBody().strength(-400))
+    .force("center", d3.forceCenter(visWidth / 2, visHeight / 2))
+    .force('collision',d3.forceCollide().radius(d => d.count))
+    }
+    
       // Add tick function for updating positions of nodes and links
       //use d.value to define the type of line
         simulation.on("tick", () => {
@@ -209,11 +228,7 @@ checkbox.addEventListener('change', function() {
 
 
 
-    // TASK
-    // create a force Simulation ( https://github.com/d3/d3-force ) using the nodes and links
-        //make sure the force is centered at the middle of your visualization 
-        //and the nodes do not overlap
- 
+    
 
          
 
