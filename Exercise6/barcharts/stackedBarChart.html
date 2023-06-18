@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8" />
+  <title>Data Vis - Assignment 06</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-shape.v3.min.js"></script>
+  <link rel="stylesheet" href="tooltip.css" />
+</head>
+<body style="text-align: center;">
+  <div id="header">
+    <h1>Stacked Barchart</h1>
+  </div>
+
+  <div id="tooltip"></div>
+
+  <svg id="chart" width="1000" height="600">
+    <g class="layer"></g>
+    <g class="legend"></g>
+    <g class="labels"></g>
+    <div class="tooltip" style="position: absolute; visibility: hidden; background-color: #ffffff; padding: 10px; border: 1px solid #cccccc;"></div>
+  </svg>
+
+  <script src="data.js"></script>
+  <script src="stackedBarChart.js"></script>
+</body>
