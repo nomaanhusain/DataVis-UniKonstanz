@@ -109,7 +109,7 @@ function updateChart() {
   //console.log("sel called");
   let extent = d3.brushSelection(this)
   //console.log("hahah",extent)
-  selection.classed("non_brushed", function(d){ return !(isBrushed(extent, xScale(d["culmen_length_mm"]), yScale(d["culmen_depth_mm"]) )) } )
+  selection.classed("non_brushed", function(d){ return !(isBrushed(extent, xScale(d["culmen_length_mm"]), yScale(d["culmen_depth_mm"]) )) } ) //chaging the class based on brushed area
   selection.classed("brushed", function(d){ return (isBrushed(extent, xScale(d["culmen_length_mm"]), yScale(d["culmen_depth_mm"]) )) } )
   selectedData = cleanData.filter( function(d){ return (isBrushed(extent, xScale(d["culmen_length_mm"]), yScale(d["culmen_depth_mm"]) )) } )
   // console.log(selectedData)
